@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PositionController;
+use App\Http\Controllers\UpdateController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,3 +22,4 @@ Route::get('/', function () {
 });
 Route::resource('position',PositionController::class);
 Route::resource('employee',EmployeeController::class);
+Route::put('/update/employee/{id}', [UpdateController::class, 'put'])->name('employee.update.field');

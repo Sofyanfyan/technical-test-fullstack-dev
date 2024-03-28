@@ -38,34 +38,30 @@
     </div>
 </div>
 
-@if (session('after_create')){
 <script>
-    const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.onmouseenter = Swal.stopTimer;
-            toast.onmouseleave = Swal.resumeTimer;
-        }
-    });
-    Toast.fire({
-        icon: "success",
-        title: "Signed in successfully"
-    });
+    function deleteEmployee(id) {
 
-</script> 
-}
+      const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success",
+                cancelButton: "btn btn-danger"
+            },
+            buttonsStyling: false
+        });
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel!",
+            reverseButtons: true,
+            confirmButtonClass: 'me-2',
+            cancelButtonClass: 'me-2'
+        }).then((result) => {
+            if (result.isConfirmed) {
 
-@endif
-
-<script>
-     function deleteEmployee(id) {
-        var confirmation = confirm("Are you sure you want to delete this employee?");
-        if (confirmation) {
-        let token = $("meta[name='csrf-token']").attr("content");
+               let token = $("meta[name='csrf-token']").attr("content");
             $.ajax({
                 url: '/employee/' + id,
                 type: 'delete',
@@ -73,24 +69,66 @@
                     'X-CSRF-TOKEN': token
                 },
                 data: {
-                        id: id,
-                        _token: token,
-               },
-                success: function(result) {
-                   console.log("Employee deleted successfully.");
-                   location.reload();
+                    id: id,
+                    _token: token,
                 },
-                error: function(err) {
-                    alert('Internal service error!');
+                success: function (result) {
+                    swalWithBootstrapButtons.fire({
+                    title: "Deleted!",
+                    text: "Your file has been deleted.",
+                    icon: "success"
+                    });
+                    setTimeout(() => {
+                     
+                       location.reload();
+                    }, 2000);
+                },
+                error: function (err) {
+                    Swal.fire({
+                       icon: "error",
+                       title: "Oops...",
+                       text: "Something went wrong!",
+                       footer: '<a href="#">Why do I have this issue?</a>'
+                     });
                     console.error("Error deleting employee: " + err.responseText);
                 }
             });
-        }
+                
+            } else if (
+                /* Read more about handling dismissals below */
+                result.dismiss === Swal.DismissReason.cancel
+            ) {
+                swalWithBootstrapButtons.fire({
+                    title: "Cancelled",
+                    text: "Your imaginary file is safe :)",
+                    icon: "error"
+                });
+            }
+        });
     }
-     function changeStatus(id) {
-        var confirmation = confirm("Are you sure you want to update this employee?");
-        if (confirmation) {
-        let token = $("meta[name='csrf-token']").attr("content");
+
+    function changeStatus(id) {
+
+      const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success",
+                cancelButton: "btn btn-danger"
+            },
+            buttonsStyling: false
+        });
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, update it!",
+            cancelButtonText: "No, cancel!",
+            reverseButtons: true,
+            confirmButtonClass: 'me-2',
+            cancelButtonClass: 'me-2'
+        }).then((result) => {
+            if (result.isConfirmed) {
+            let token = $("meta[name='csrf-token']").attr("content");
             $.ajax({
                 url: '/employee/' + id,
                 type: 'PATCH',
@@ -98,22 +136,45 @@
                     'X-CSRF-TOKEN': token
                 },
                 data: {
-                        id: id,
-                        _token: token,
-               },
-                success: function(result) {
-                   console.log("Employee update status success");
-                   location.reload();
+                    id: id,
+                    _token: token,
                 },
-                error: function(err) {
-                    alert('Internal service error!');
+                success: function (result) {
+                    swalWithBootstrapButtons.fire({
+                    title: "Updated!",
+                    text: "Your file has been updated.",
+                    icon: "success"
+                    });
+                    setTimeout(() => {
+                     
+                       location.reload();
+                    }, 2000);
+                },
+                error: function (err) {
+                    Swal.fire({
+                       icon: "error",
+                       title: "Oops...",
+                       text: "Something went wrong!",
+                       footer: '<a href="#">Why do I have this issue?</a>'
+                     });
                     console.error("Employee update status error: " + err.responseText);
                 }
             });
-        }
+                
+            } else if (
+                /* Read more about handling dismissals below */
+                result.dismiss === Swal.DismissReason.cancel
+            ) {
+                swalWithBootstrapButtons.fire({
+                    title: "Cancelled",
+                    text: "Your imaginary file is safe :)",
+                    icon: "error"
+                });
+            }
+        });
     }
-</script>
 
+</script>
 @endsection
 
 @push('js')
@@ -140,24 +201,28 @@
                 name: 'position.name',
             },
             {
-               data: null,
-               orderable: false,
-               searchable: false,
-               render: function (data, type, full, meta) {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function (data, type, full, meta) {
 
-                  let status =  full.status == 1? "Active" : "Inactive"
-                    return '<button onclick="changeStatus(' + full.id + ')" class="btn btn-secondary me-1">'+ status +'</button>';
+                    let status = full.status == 1 ? "Active" : "Inactive"
+                    return '<button onclick="changeStatus(' + full.id +
+                        ')" class="btn btn-secondary me-1">' + status + '</button>';
                 },
             },
-            { 
-               data: null,
-               orderable: false,
-               searchable: false,
-               render: function(data, type, full, meta) {
-                  var detailUrl = '{{ route("employee.show", ":id") }}'.replace(':id', full.id);
-                  var deleteUrl = '{{ route("employee.destroy", ":id") }}'.replace(':id', full.id);
-                   return '<a href="{{route('employee.create')}}" class="btn btn-primary me-1">Edit</a>| <button onclick="deleteEmployee(' + full.id + ')" class="btn btn-danger me-1">Delete</button> | <a href="' + detailUrl + '" class="btn btn-warning me-1">Detail</a>';
-               }
+            {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function (data, type, full, meta) {
+                    var detailUrl = '{{ route("employee.show", ":id") }}'.replace(':id', full.id);
+                    var deleteUrl = '{{ route("employee.destroy", ":id") }}'.replace(':id', full.id);
+                    var updateUrl = '{{ route("employee.edit", ":id") }}'.replace(':id', full.id);
+                    return '<a href="'+ updateUrl +'" class="btn btn-primary me-1">Edit</a>| <button onclick="deleteEmployee(' +
+                        full.id + ')" class="btn btn-danger me-1">Delete</button> | <a href="' +
+                        detailUrl + '" class="btn btn-warning me-1">Detail</a>';
+                }
             },
         ]
     })

@@ -80,7 +80,6 @@ class EmployeeController extends Controller
          "status" => true,
          'path_image' => $imageName
       ]);
-      session()->flash('after_create');
       return redirect('/employee');
     }
 
@@ -105,7 +104,11 @@ class EmployeeController extends Controller
      */
     public function edit(Employee $employee)
     {
-        //
+        $data = Employee::with('position')->where('id', $employee->id)->first();
+        $position = Position::all();
+        $relativePath = '/'.$data->path_image;
+        $imgPath = $_SERVER['DOCUMENT_ROOT'] . '/images' . $relativePath;
+        return view('employee.update')->with('data', $data)->with('position', $position)->with('imgPath', $imgPath);
     }
 
     /**
